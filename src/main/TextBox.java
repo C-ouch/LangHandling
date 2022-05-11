@@ -27,8 +27,12 @@ public class TextBox extends JFrame
     private static enum Mode { INSERT, COMPLETION };
     private final ArrayList<String> words;
     private Mode mode = Mode.INSERT;
+
     private int startPos;
-    boolean punctuation = false;
+    private int endPos;
+    private int i=0; //used to combat multiple whitespaces after a punctuation
+    private int n=0; //used to combat multiple whitespaces
+
     private String currWord ="";
 
 
@@ -132,38 +136,52 @@ public class TextBox extends JFrame
             e.printStackTrace();
         }
 
-
-//        int endPos = pos;
-//        if (!Character.isLetter(content.charAt(endPos))) {
-//            endPos = pos - 1;
-//        }
-//        System.out.println("endPos: " + endPos);
-//        System.out.println("char_end: " + content.charAt(endPos));
         System.out.println("pos: " + pos);
         System.out.println("char_pos: " + content.charAt(pos));
 
-        // Find where the word starts
-        if (Character.isLetter(content.charAt(pos))) {
-            int w;
-            for (w = pos; w >= 0; w--) {
+        if(pos == n && content.charAt(pos) == ' ') {
+            n++;
+            return;
+        }
 
-                if (!Character.isLetter(content.charAt(w))) { //This checks if there is a whitespace and if so it breaks and only stops at the position before the whitespace
-                    break;
-                }
-            }
-            System.out.println("w: " + w);
+        // Find where the word starts
+        int w;
+        for (w = pos; w >= 0; w--) {
+//          if (!Character.isLetter(content.charAt(w)))  //This checks if there is a non-alphabet and if so it breaks and only stops at the position before the whitespace
+            if (content.charAt(w) == ' ')
+                break;
+        }
+
+        System.out.println("w: " + w);
+
+
+        if( (Pattern.matches("\\p{Punct}", Character.toString(content.charAt(pos))) || Character.isDigit(content.charAt(pos)))) {
+            endPos = pos;
+            i=0;
+        }
+
+//      if (Character.isLetter(content.charAt(pos))) {
+        if (content.charAt(pos) != ' ') {//This checks if there is a whitespace and if so it breaks and only stops at the position before the whitespace
+            i=0; //used to combat multiple whitespaces
+//            System.out.println("w: " + w);
 
             startPos = w;
+
+
 
             if (pos - w < 2) {
                 // Too few chars
                 return;
             }
 
+            if (Character.isDigit(content.charAt(w+1)) )//This checks if there is a numeric value and if so it returns sp there is no error
+                return;
+
             System.out.println("char_w: " + content.charAt(w + 1));
 
             String prefix = content.substring(w + 1).toLowerCase();
-            System.out.println(prefix);
+            System.out.println("prefix: " +prefix+"\n");
+
             int n = Collections.binarySearch(words, prefix);
             if (n < 0 && -n <= words.size()) {
                 String match = words.get(-n - 1);
@@ -180,29 +198,48 @@ public class TextBox extends JFrame
                 mode = Mode.INSERT;
             }
         }else{
+            try {
 
-            int endPos = pos;
-            if(punctuation){
-                endPos = pos - 1;
+
+                System.out.println("startPos: " + startPos);
+                System.out.println("char_startPos: " + content.charAt(startPos + 1));
+
+                System.out.println("endPos: " + endPos);
+                System.out.println("char_end: " + content.charAt(endPos));
+
+                System.out.println("i: " + i);
+
+                //check for punctuation at end of word and made to not mess up with multiple spaces
+                if ((pos - (endPos + i)) == 1) {
+                    currWord = content.substring(startPos + 1, endPos);
+                    System.out.println("here");
+
+                } else {
+                    currWord = content.substring(startPos + 1, pos);
+                }
+
+                //This replaces all none alphabetical numbers with empty space and then lower cases them
+                currWord = currWord.replaceAll("[^A-Za-z|']+", "_").toLowerCase();
+
+                System.out.println("Current Word: " + currWord + "\n");
+
+                i++;
+            }catch(IndexOutOfBoundsException iob){
+                System.err.println("IndexOutOfBoundsException for a substring: "+ iob.getMessage());
             }
-            System.out.println("endPos: " + endPos);
-            System.out.println("char_end: " + content.charAt(endPos));
-
-
-            System.out.println("startPos: " + startPos);
-            System.out.println("char_startPos: " + content.charAt(startPos + 1));
-            //check for punctuation
-            if(Pattern.matches("\\p{Punct}", Character.toString(content.charAt(endPos)))){
-                //currWord = content.substring(startPos+1,endPos-1).toLowerCase();
-                punctuation = true;
-                currWord = content.substring(startPos+1,endPos).toLowerCase();
-
-            }else{
-                punctuation = false;
-                currWord = content.substring(startPos+1, endPos+1).toLowerCase();
-            }
-            System.out.println("Current Word: " + currWord);
         }
+        /*System.out.println("pos: " + pos);
+        System.out.println("char_pos: " + content.charAt(pos));
+
+        System.out.println("startPos: " + startPos);
+        System.out.println("char_startPos: " + content.charAt(startPos + 1));
+
+        System.out.println("endPos: " + endPos);
+        System.out.println("char_end: " + content.charAt(endPos));
+
+        System.out.println("Current Word: " + currWord+"\n");*/
+        n++;
+
     }
 
     private class CompletionTask implements Runnable {
