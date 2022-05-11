@@ -5,10 +5,13 @@ package main;
  */
 
 import javax.swing.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
+import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.GroupLayout.*;
 
@@ -24,14 +27,23 @@ public class TextBox extends JFrame
 
     private static final String COMMIT_ACTION = "commit";
     private static enum Mode { INSERT, COMPLETION };
-    private final ArrayList<String> words;
+
+    private ArrayList<String> prevWords;
+    private ArrayList<String> books;
+    private HashMap<String, Integer> possibleWords;
+
     private Mode mode = Mode.INSERT;
+
     private int startPos;
+    private int endPos;
+    private char endChar;
+
+    boolean punctuation = false;
     private String currWord ="";
 
 
 
-    public TextBox(){
+    public TextBox() throws FileNotFoundException {
         super("TextAreaDemo");
         initComponents();
 
@@ -42,13 +54,14 @@ public class TextBox extends JFrame
         im.put(KeyStroke.getKeyStroke("TAB"), COMMIT_ACTION);
         am.put(COMMIT_ACTION, new CommitAction());
 
-
-        words = new ArrayList<String>(5);
-        words.add("spark");
-        words.add("special");
-        words.add("spectacles");
-        words.add("spectacular");
-        words.add("swing");
+        books = new ArrayList<String>();
+        File file = new File("big.txt");
+        Scanner input = new Scanner(file);
+        while(input.hasNext()){
+            books.add(input.next().toLowerCase());
+        }
+        prevWords = new ArrayList<String>(3);
+        possibleWords = new HashMap<String, Integer>();
     }
 
 
@@ -130,7 +143,8 @@ public class TextBox extends JFrame
             e.printStackTrace();
         }
 
-//        int endPos = pos;
+
+ //       int endPos = pos;
 //        if (!Character.isLetter(content.charAt(endPos))) {
 //            endPos = pos - 1;
 //        }
@@ -140,13 +154,13 @@ public class TextBox extends JFrame
         System.out.println("pos: " + pos);
         System.out.println("char_pos: " + content.charAt(pos));
 
-
         // Find where the word starts
         if (Character.isLetter(content.charAt(pos))) {
             int w;
             for (w = pos; w >= 0; w--) {
 
-                if (!Character.isLetter(content.charAt(w))) { //This checks if there is a whitespace and if so it breaks and only stops at the position before the whitespace
+//                if (!Character.isLetter(content.charAt(w))) { //This checks if there is a non-alphabet and if so it breaks and only stops at the position before the whitespace
+                if (content.charAt(w) == ' ') {
                     break;
                 }
             }
@@ -161,9 +175,9 @@ public class TextBox extends JFrame
 
             System.out.println("char_w: " + content.charAt(w + 1));
 
+            /*String prefix = content.substring(w + 1).toLowerCase();
+            System.out.println("prefix: " +prefix);
 
-            String prefix = content.substring(w + 1).toLowerCase();
-            System.out.println(prefix);
             int n = Collections.binarySearch(words, prefix);
             if (n < 0 && -n <= words.size()) {
                 String match = words.get(-n - 1);
@@ -178,18 +192,88 @@ public class TextBox extends JFrame
             } else {
                 // Nothing found
                 mode = Mode.INSERT;
-            }
+            }*/
         }else{
-            int endPos = pos;
-            System.out.println("endPos: " + endPos);
+
+            endPos = pos;
+/*            //endChar = content.charAt(pos);
+
+//            if(punctuation){
+//                endPos = pos - 1;
+//            }
+                System.out.println("endPos: " + endPos);
             System.out.println("char_end: " + content.charAt(endPos));
 
 
             System.out.println("startPos: " + startPos);
-            System.out.println("char_startPos: " + content.charAt(startPos + 1));
+            System.out.println("char_startPos: " + content.charAt(startPos + 1));*/
 
-            currWord = content.substring(startPos+1, endPos).toLowerCase();
-            System.out.println(currWord);
+
+            currWord = content.substring(startPos+1,endPos);
+
+            //This replaces all none alphabetical numbers with empty space and then lower cases them
+            currWord = currWord.replaceAll("[^A-Za-z]+", "").toLowerCase();
+
+
+            //check for punctuation
+//            if(Pattern.matches("\\p{Punct}", Character.toString(content.charAt(endPos)))){
+//                //currWord = content.substring(startPos+1,endPos-1).toLowerCase();
+//                punctuation = true;
+//                currWord = content.substring(startPos+1,endPos).toLowerCase();
+//
+//            }else{
+//                punctuation = false;
+//                currWord = content.substring(startPos+1, endPos+1).toLowerCase();
+//            }
+
+           // if(prevWords.size() < 3){
+            if(prevWords.size() < 3){
+                prevWords.add(currWord);
+            }
+            else{
+                prevWords.remove(0);
+                prevWords.add(currWord);
+            }
+
+            if(prevWords.size() >= 3){
+                for(int i = 0; i < books.size(); i++){
+                    if(books.get(i).matches(prevWords.get(0))){
+                        if(books.get(i+1).matches(prevWords.get(1))){
+                            if(books.get(i+2).matches(prevWords.get(2))){
+                                if(possibleWords.get(books.get(i+3)) != null) {
+                                    int freq = possibleWords.get(books.get(i + 3));
+                                    possibleWords.replace(books.get(i + 3),freq,freq+1);
+                                }
+                                else{
+                                    possibleWords.put(books.get(i+3),1);
+                                    System.out.println("New Word Added: " + possibleWords.get(books.get(i+3)));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println("Current Word: " + currWord+"\n");
+            String mostCommon = "";
+            int max = 0;
+            for (String key : possibleWords.keySet()) {
+                if (possibleWords.get(key) > max){
+                    max = possibleWords.get(key);
+                    mostCommon = key;
+                }
+                System.out.println(key + ":" + possibleWords.get(key));
+            }
+            if(max == 0){
+                mode = Mode.INSERT;
+            }
+            else{
+                possibleWords.clear();
+                System.out.println("Most Common: " + mostCommon);
+                SwingUtilities.invokeLater(
+                        new CompletionTask(mostCommon, pos + 1));
+            }
+
+
         }
     }
 
@@ -230,7 +314,11 @@ public class TextBox extends JFrame
             public void run() {
                 //Turn off metal's use of bold fonts
                 UIManager.put("swing.boldMetal", Boolean.FALSE);
-                new TextBox().setVisible(true);
+                try {
+                    new TextBox().setVisible(true);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }}
