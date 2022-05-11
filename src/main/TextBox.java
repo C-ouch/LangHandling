@@ -9,7 +9,6 @@ import java.util.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
-import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.GroupLayout.*;
 
@@ -28,7 +27,6 @@ public class TextBox extends JFrame
     private final ArrayList<String> words;
     private Mode mode = Mode.INSERT;
     private int startPos;
-    boolean punctuation = false;
     private String currWord ="";
 
 
@@ -132,15 +130,16 @@ public class TextBox extends JFrame
             e.printStackTrace();
         }
 
-
 //        int endPos = pos;
 //        if (!Character.isLetter(content.charAt(endPos))) {
 //            endPos = pos - 1;
 //        }
 //        System.out.println("endPos: " + endPos);
 //        System.out.println("char_end: " + content.charAt(endPos));
+
         System.out.println("pos: " + pos);
         System.out.println("char_pos: " + content.charAt(pos));
+
 
         // Find where the word starts
         if (Character.isLetter(content.charAt(pos))) {
@@ -162,6 +161,7 @@ public class TextBox extends JFrame
 
             System.out.println("char_w: " + content.charAt(w + 1));
 
+
             String prefix = content.substring(w + 1).toLowerCase();
             System.out.println(prefix);
             int n = Collections.binarySearch(words, prefix);
@@ -180,28 +180,16 @@ public class TextBox extends JFrame
                 mode = Mode.INSERT;
             }
         }else{
-
             int endPos = pos;
-            if(punctuation){
-                endPos = pos - 1;
-            }
             System.out.println("endPos: " + endPos);
             System.out.println("char_end: " + content.charAt(endPos));
 
 
             System.out.println("startPos: " + startPos);
             System.out.println("char_startPos: " + content.charAt(startPos + 1));
-            //check for punctuation
-            if(Pattern.matches("\\p{Punct}", Character.toString(content.charAt(endPos)))){
-                //currWord = content.substring(startPos+1,endPos-1).toLowerCase();
-                punctuation = true;
-                currWord = content.substring(startPos+1,endPos).toLowerCase();
 
-            }else{
-                punctuation = false;
-                currWord = content.substring(startPos+1, endPos+1).toLowerCase();
-            }
-            System.out.println("Current Word: " + currWord);
+            currWord = content.substring(startPos+1, endPos).toLowerCase();
+            System.out.println(currWord);
         }
     }
 
