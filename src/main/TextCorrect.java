@@ -70,13 +70,13 @@ public class TextCorrect {
             String key = "";
             String value;
 
-            while (scanner.hasNextLine()) {
-                System.out.println("Values = " + valueList + "\n");
-                 line = scanner.nextLine();
-                 if(line.equals("BREAK")) {
-                     System.out.println("Break: "+ line+"\n");
-                     break;
-                 }
+            /*while (scanner.hasNextLine()) {
+//                System.out.println("Values = " + valueList + "\n");
+                line = scanner.nextLine();
+                if(line.equals("BREAK")) {
+                    System.out.println("Break: "+ line+"\n");
+                    break;
+                }
 
 
                 first = line.substring(0,1);
@@ -100,13 +100,13 @@ public class TextCorrect {
                     }
 //                    System.out.println(valueList.size());
 
-                    System.out.println(key);
+//                    System.out.println(key);
 
                     //reset list
                     valueList.clear();
-                }else if (valueList.contains("zeenith")){
+                }else if (key.equals("zenith")){
                     // put values into map
-                    if(!key.equals("")) {
+                    if(valueList.contains("zeenith")) {
                         System.out.println("Key = " + key);
                         System.out.println("Values = " + valueList + "\n");
 
@@ -116,35 +116,98 @@ public class TextCorrect {
 
                     }
                 }else{
-//                    line = line; //need this for some reason for line to realize there values in it
+                    line = line; //need this for some reason for line to realize there values in it
 //
-                        System.out.println("current Line:" +line);
-                        valueList.add(line); // populate list
-                    System.out.println("Values = " + valueList + "\n");
+//                    System.out.println("current Line:" +line);
+                    valueList.add(line); // populate list
+//                    System.out.println("Values = " + valueList + "\n");
                 }
-                }
+            }*/
+            while (scanner.hasNextLine()) {
+//                System.out.println("Values = " + valueList + "\n");
+                line = scanner.nextLine();
+//                System.out.println(line);
 
+//                if(line.equals("BREAK")) {
+//                    System.out.println("Break: "+ line+"\n");
+//                    break;
+//                }
+
+
+                first = line.substring(0,1);
+
+
+                if(!first.equals("$")) {
+                    line = line; //need this for some reason for line to realize there values in it
+//
+//                    System.out.println("current Line:" +line);
+                    valueList.add(line); // populate list
+//                    System.out.println("Values = " + valueList + "\n");
+
+                }else if (key.equals("zenith")){
+                    // put values into map
+                    if(valueList.contains("zeenith")) {
+                        System.out.println("Key = " + key);
+                        System.out.println("Values = " + valueList + "\n");
+
+                        hash.put(key, valueList);
+                        //reset list
+                        valueList.clear();
+
+                    }
+                }else{
+
+//                    if (key.equals("zenith"))
+//                        System.out.println(true);
+                    // put values into map
+                    if(!valueList.isEmpty() && !key.equals("")) {
+//                        System.out.println("Key = " + key);
+//                        System.out.println("Values = " + valueList + "\n");
+
+                        hash.put(key, valueList);
+
+//                        System.out.println("Key = " +hash.get(key));
+//                        System.out.println("Values = " + valueList + "\n");
+
+                    }
+
+                    key = "";
+                    for (int n = 1; n < line.length(); n++) {
+                        x = line.charAt(n);
+                        key = key + x;
+//                        System.out.println(x);
+
+                    }
+//                    System.out.println(valueList.size());
+
+//                    System.out.println(key);
+
+                    //reset list
+                    valueList.clear();
+                }
+            }
 
 
             System.out.println(hash.size());
-//            try {
-//                // iterate and display values
-//                System.out.println("Fetching Keys and corresponding [Multiple] Values n");
+            try {
+                // iterate and display values
+                System.out.println("Fetching Keys and corresponding [Multiple] Values n");
 //                for (Map.Entry<String, List<String>> entry : hash.entrySet()) {
 //                    String _key = entry.getKey();
 //                    List<String> _values = entry.getValue();
 //                    System.out.println("Key = " + _key);
 //                    System.out.println("Values = " + _values + "\n");
 //                }
-//            }catch(NullPointerException e){}
-//            for (int j = 0; j < hash.size(); j++) {
-//                System.out.println(hash.get(j));
-//            }
+                for (var entry : hash.entrySet()) {
+                    System.out.println(entry.getKey() + "/" + entry.getValue());
+                }
+            }catch(NullPointerException e){}
+
             scanner.close();
 
 //            String returned = autoCorrect("col",hash);
 //            if(returned == null)
-//                System.out.println("Move cursor/don't change");
+//                System.out.println("Correct: Move cursor/don't change");
 //            else
 //                System.out.println(returned);
 
