@@ -37,6 +37,7 @@ public class TextBox extends JFrame
     private int startPos;
     private int endPos;
     private char endChar;
+    private String bugFix = null;
 
     boolean punctuation = false;
     private String currWord ="";
@@ -144,13 +145,6 @@ public class TextBox extends JFrame
         }
 
 
- //       int endPos = pos;
-//        if (!Character.isLetter(content.charAt(endPos))) {
-//            endPos = pos - 1;
-//        }
-//        System.out.println("endPos: " + endPos);
-//        System.out.println("char_end: " + content.charAt(endPos));
-
         System.out.println("pos: " + pos);
         System.out.println("char_pos: " + content.charAt(pos));
 
@@ -175,38 +169,10 @@ public class TextBox extends JFrame
 
             System.out.println("char_w: " + content.charAt(w + 1));
 
-            /*String prefix = content.substring(w + 1).toLowerCase();
-            System.out.println("prefix: " +prefix);
-
-            int n = Collections.binarySearch(words, prefix);
-            if (n < 0 && -n <= words.size()) {
-                String match = words.get(-n - 1);
-                if (match.startsWith(prefix)) {
-                    // A completion is found
-                    String completion = match.substring(pos - w);
-                    // We cannot modify Document from within notification,
-                    // so we submit a task that does the change later
-                    SwingUtilities.invokeLater(
-                            new CompletionTask(completion, pos + 1));
-                }
-            } else {
-                // Nothing found
-                mode = Mode.INSERT;
-            }*/
+           
         }else{
 
             endPos = pos;
-/*            //endChar = content.charAt(pos);
-
-//            if(punctuation){
-//                endPos = pos - 1;
-//            }
-                System.out.println("endPos: " + endPos);
-            System.out.println("char_end: " + content.charAt(endPos));
-
-
-            System.out.println("startPos: " + startPos);
-            System.out.println("char_startPos: " + content.charAt(startPos + 1));*/
 
 
             currWord = content.substring(startPos+1,endPos);
@@ -215,24 +181,20 @@ public class TextBox extends JFrame
             currWord = currWord.replaceAll("[^A-Za-z]+", "").toLowerCase();
 
 
-            //check for punctuation
-//            if(Pattern.matches("\\p{Punct}", Character.toString(content.charAt(endPos)))){
-//                //currWord = content.substring(startPos+1,endPos-1).toLowerCase();
-//                punctuation = true;
-//                currWord = content.substring(startPos+1,endPos).toLowerCase();
-//
-//            }else{
-//                punctuation = false;
-//                currWord = content.substring(startPos+1, endPos+1).toLowerCase();
-//            }
-
-           // if(prevWords.size() < 3){
-            if(prevWords.size() < 3){
+           if(prevWords.size() < 3){
                 prevWords.add(currWord);
             }
             else{
-                prevWords.remove(0);
-                prevWords.add(currWord);
+                if(bugFix == null) {
+                    prevWords.remove(0);
+                    prevWords.add(currWord);
+                }else{
+                    prevWords.remove(0);
+                    prevWords.add(bugFix);
+                    currWord = "";
+                    bugFix = null;
+                }
+
             }
 
             if(prevWords.size() >= 3){
@@ -288,6 +250,8 @@ public class TextBox extends JFrame
 
         public void run() {
             textArea.insert(completion, position);
+            bugFix = completion;
+
 //            textArea.insert("cool",position);
             textArea.setCaretPosition(position + completion.length()); //setCaretPosition allows for changing predictive words after shown.  (Mouse highlighting text thing)
             textArea.moveCaretPosition(position);                      //Moves start of highlighting
