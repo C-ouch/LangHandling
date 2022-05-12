@@ -5134,6 +5134,7 @@ $became
 becam
 becaume
 $because
+becuase
 bacmines
 bcouse
 be_cause

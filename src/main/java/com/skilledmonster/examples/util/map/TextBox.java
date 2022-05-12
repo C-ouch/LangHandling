@@ -1,10 +1,13 @@
-package main;
+package com.skilledmonster.examples.util.map;
 
 /*
  * TextAreaDemo.java requires no other files.
  */
 
+import com.google.common.collect.Multimap;
+
 import javax.swing.*;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -12,7 +15,6 @@ import java.awt.event.ActionEvent;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.GroupLayout.*;
-
 
 
 
@@ -37,9 +39,10 @@ public class TextBox extends JFrame
 
 
 
-    public TextBox(){
+    public TextBox() throws IOException {
         super("TextAreaDemo");
         initComponents();
+        Multimap<String,String>  missMap = TextCorrect.Misspelled();
 
         textArea.getDocument().addDocumentListener(this);
 
@@ -279,7 +282,11 @@ public class TextBox extends JFrame
             public void run() {
                 //Turn off metal's use of bold fonts
                 UIManager.put("swing.boldMetal", Boolean.FALSE);
-                new TextBox().setVisible(true);
+                try {
+                    new TextBox().setVisible(true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }}
