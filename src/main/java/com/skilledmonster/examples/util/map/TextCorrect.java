@@ -286,11 +286,11 @@ public class TextCorrect {
 
 
 
-            String returned = autoCorrect("cant",hash);
-            if(returned == null)
-                System.out.println("*Correct*: Move cursor/don't change");
-            else
-                System.out.println(returned);
+//            String returned = autoCorrect("cant",hash);
+//            if(returned == null)
+//                System.out.println("*Correct*: Move cursor/don't change");
+//            else
+//                System.out.println(returned);
 
 
 
